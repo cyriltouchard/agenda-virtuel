@@ -1,0 +1,301 @@
+<div class="event-form-dialog">
+  <div class="dialog-header">
+    <h2 mat-dialog-title>
+      <mat-icon>{{ isEditMode ? 'edit' : 'add' }}</mat-icon>
+      {{ isEditMode ? 'Modifier l\'événement' : 'Nouvel événement' }}
+    </h2>
+    <button mat-icon-button mat-dialog-close>
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content class="dialog-content">
+    <form [formGroup]="eventForm" (ngSubmit)="onSubmit()">
+      
+      <!-- Informations de base -->
+      <div class="form-section">
+        <h3>
+          <mat-icon>info</mat-icon>
+          Informations de base
+        </h3>
+        
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Titre de l'événement</mat-label>
+            <input matInput formControlName="titre" placeholder="Ex: Réunion équipe" maxlength="100">
+            <mat-icon matSuffix>title</mat-icon>
+            <mat-hint>{{ eventForm.get('titre')?.value?.length || 0 }}/100</mat-hint>
+            <mat-error *ngIf="eventForm.get('titre')?.hasError('required')">
+              Le titre est requis
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Description</mat-label>
+            <textarea matInput formControlName="description" 
+                      placeholder="Décrivez votre événement..." 
+                      rows="3" maxlength="500"></textarea>
+            <mat-icon matSuffix>description</mat-icon>
+            <mat-hint>{{ eventForm.get('description')?.value?.length || 0 }}/500</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Lieu</mat-label>
+            <input matInput formControlName="lieu" placeholder="Ex: Salle de conférence A" maxlength="200">
+            <mat-icon matSuffix>place</mat-icon>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Date et heure -->
+      <div class="form-section">
+        <h3>
+          <mat-icon>schedule</mat-icon>
+          Date et heure
+        </h3>
+
+        <div class="form-row">
+          <mat-checkbox formControlName="touteLaJournee" class="all-day-checkbox">
+            <mat-icon>event</mat-icon>
+            Toute la journée
+          </mat-checkbox>
+        </div>
+
+        <div class="form-row date-time-row">
+          <mat-form-field appearance="outline" class="date-field">
+            <mat-label>Date de début</mat-label>
+            <input matInput [matDatepicker]="startDatePicker" formControlName="dateDebut">
+            <mat-datepicker-toggle matSuffix [for]="startDatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #startDatePicker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="time-field" 
+                          *ngIf="!eventForm.get('touteLaJournee')?.value">
+            <mat-label>Heure de début</mat-label>
+            <input matInput type="time" formControlName="heureDebut">
+          </mat-form-field>
+        </div>
+
+        <div class="form-row date-time-row">
+          <mat-form-field appearance="outline" class="date-field">
+            <mat-label>Date de fin</mat-label>
+            <input matInput [matDatepicker]="endDatePicker" formControlName="dateFin">
+            <mat-datepicker-toggle matSuffix [for]="endDatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #endDatePicker></mat-datepicker>
+            <mat-error *ngIf="eventForm.get('dateFin')?.hasError('dateInvalide')">
+              La date de fin doit être après la date de début
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="time-field" 
+                          *ngIf="!eventForm.get('touteLaJournee')?.value">
+            <mat-label>Heure de fin</mat-label>
+            <input matInput type="time" formControlName="heureFin">
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Catégorie et apparence -->
+      <div class="form-section">
+        <h3>
+          <mat-icon>category</mat-icon>
+          Catégorie et apparence
+        </h3>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="category-field">
+            <mat-label>Catégorie</mat-label>
+            <mat-select formControlName="categorie">
+              <mat-option *ngFor="let cat of categories" [value]="cat.value">
+                <div class="category-option">
+                  <mat-icon [style.color]="cat.color">{{ cat.icon }}</mat-icon>
+                  <span>{{ cat.label }}</span>
+                </div>
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <div class="selected-category">
+            <mat-icon [style.color]="getCategorieColor(eventForm.get('categorie')?.value)">
+              {{ getCategorieIcon(eventForm.get('categorie')?.value) }}
+            </mat-icon>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="color-label">Couleur personnalisée</label>
+          <div class="color-palette">
+            <button type="button" 
+                    *ngFor="let couleur of couleursPredefinies"
+                    class="color-button"
+                    [class.selected]="eventForm.get('couleur')?.value === couleur"
+                    [style.background-color]="couleur"
+                    [attr.aria-label]="'Sélectionner la couleur ' + couleur"
+                    [title]="'Sélectionner la couleur ' + couleur"
+                    (click)="selectionnerCouleur(couleur)">
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Visibilité et partage -->
+      <div class="form-section">
+        <h3>
+          <mat-icon>visibility</mat-icon>
+          Visibilité et partage
+        </h3>
+
+        <div class="form-row">
+          <mat-radio-group formControlName="visibilite" class="visibility-group">
+            <mat-radio-button *ngFor="let option of visibiliteOptions" [value]="option.value">
+              <div class="visibility-option">
+                <div class="visibility-header">
+                  <mat-icon>{{ option.icon }}</mat-icon>
+                  <span class="visibility-label">{{ option.label }}</span>
+                </div>
+                <p class="visibility-description">{{ option.description }}</p>
+              </div>
+            </mat-radio-button>
+          </mat-radio-group>
+        </div>
+      </div>
+
+      <!-- Rappels -->
+      <div class="form-section">
+        <h3>
+          <mat-icon>notifications</mat-icon>
+          Rappels
+          <button type="button" mat-icon-button (click)="ajouterRappel()" class="add-button">
+            <mat-icon>add</mat-icon>
+          </button>
+        </h3>
+
+        <div formArrayName="rappels">
+          <div *ngFor="let rappel of rappels.controls; let i = index" 
+               [formGroupName]="i" class="rappel-item">
+            <mat-form-field appearance="outline" class="rappel-time">
+              <mat-label>Temps d'avance</mat-label>
+              <mat-select formControlName="tempsDAvance">
+                <mat-option *ngFor="let option of rappelOptions" [value]="option.value">
+                  {{ option.label }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="rappel-type">
+              <mat-label>Type</mat-label>
+              <mat-select formControlName="type">
+                <mat-option *ngFor="let option of typeRappelOptions" [value]="option.value">
+                  <div class="rappel-type-option">
+                    <mat-icon>{{ option.icon }}</mat-icon>
+                    <span>{{ option.label }}</span>
+                  </div>
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <button type="button" mat-icon-button color="warn" 
+                    (click)="supprimerRappel(i)" class="delete-button">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+
+          <div *ngIf="rappels.length === 0" class="empty-state">
+            <mat-icon>notifications_off</mat-icon>
+            <p>Aucun rappel configuré</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tags -->
+      <div class="form-section">
+        <h3>
+          <mat-icon>local_offer</mat-icon>
+          Tags
+        </h3>
+
+        <div class="tags-input">
+          <mat-form-field appearance="outline">
+            <mat-label>Ajouter un tag</mat-label>
+            <input matInput #tagInput placeholder="Ex: important, urgent" 
+                   (keydown.enter)="ajouterTag(tagInput.value); tagInput.value = ''" 
+                   maxlength="20">
+            <button type="button" mat-icon-button matSuffix 
+                    (click)="ajouterTag(tagInput.value); tagInput.value = ''">
+              <mat-icon>add</mat-icon>
+            </button>
+          </mat-form-field>
+        </div>
+
+        <div class="tags-display" formArrayName="tags">
+          <mat-chip-set>
+            <mat-chip *ngFor="let tag of tags.controls; let i = index" 
+                      [removable]="true" (removed)="supprimerTag(i)">
+              {{ tag.value }}
+              <mat-icon matChipRemove>cancel</mat-icon>
+            </mat-chip>
+          </mat-chip-set>
+
+          <div *ngIf="tags.length === 0" class="empty-state">
+            <mat-icon>local_offer</mat-icon>
+            <p>Aucun tag ajouté</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Liens -->
+      <div class="form-section">
+        <h3>
+          <mat-icon>link</mat-icon>
+          Liens utiles
+          <button type="button" mat-icon-button (click)="ajouterLien()" class="add-button">
+            <mat-icon>add</mat-icon>
+          </button>
+        </h3>
+
+        <div formArrayName="liens">
+          <div *ngFor="let lien of liens.controls; let i = index" 
+               [formGroupName]="i" class="lien-item">
+            <mat-form-field appearance="outline" class="lien-titre">
+              <mat-label>Titre du lien</mat-label>
+              <input matInput formControlName="titre" placeholder="Ex: Documentation">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="lien-url">
+              <mat-label>URL</mat-label>
+              <input matInput formControlName="url" placeholder="https://...">
+            </mat-form-field>
+
+            <button type="button" mat-icon-button color="warn" 
+                    (click)="supprimerLien(i)" class="delete-button">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+
+          <div *ngIf="liens.length === 0" class="empty-state">
+            <mat-icon>link_off</mat-icon>
+            <p>Aucun lien ajouté</p>
+          </div>
+        </div>
+      </div>
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions class="dialog-actions">
+    <button mat-button type="button" (click)="onCancel()" [disabled]="isLoading">
+      Annuler
+    </button>
+    
+    <button mat-raised-button color="primary" 
+            (click)="onSubmit()" 
+            [disabled]="!eventForm.valid || isLoading">
+      <mat-icon *ngIf="isLoading">hourglass_empty</mat-icon>
+      <mat-icon *ngIf="!isLoading">{{ isEditMode ? 'save' : 'add' }}</mat-icon>
+      {{ isEditMode ? 'Modifier' : 'Créer' }}
+    </button>
+  </mat-dialog-actions>
+</div>

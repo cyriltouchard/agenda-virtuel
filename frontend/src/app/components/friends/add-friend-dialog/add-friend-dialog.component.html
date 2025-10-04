@@ -1,0 +1,78 @@
+<div class="add-friend-dialog">
+  <div class="dialog-header">
+    <h2 mat-dialog-title>
+      <mat-icon class="header-icon">person_add</mat-icon>
+      Ajouter un ami
+    </h2>
+    <p class="dialog-subtitle">Invitez quelqu'un à rejoindre votre réseau d'amis</p>
+  </div>
+
+  <mat-dialog-content class="dialog-content">
+    <form [formGroup]="addFriendForm" class="add-friend-form">
+      <!-- Champ email -->
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Adresse email</mat-label>
+        <input 
+          matInput 
+          formControlName="email"
+          placeholder="exemple@email.com"
+          type="email"
+          autocomplete="email">
+        <mat-icon matSuffix>email</mat-icon>
+        <mat-error *ngIf="hasFieldError('email')">
+          {{ getFieldError('email') }}
+        </mat-error>
+        <mat-hint>Entrez l'adresse email de la personne que vous souhaitez ajouter</mat-hint>
+      </mat-form-field>
+
+      <!-- Champ message optionnel -->
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Message personnel (optionnel)</mat-label>
+        <textarea 
+          matInput 
+          formControlName="message"
+          placeholder="Salut ! J'aimerais t'ajouter à mes amis..."
+          rows="3"
+          maxlength="200"></textarea>
+        <mat-icon matSuffix>message</mat-icon>
+        <mat-error *ngIf="hasFieldError('message')">
+          {{ getFieldError('message') }}
+        </mat-error>
+        <mat-hint align="end">{{ addFriendForm.get('message')?.value?.length || 0 }}/200</mat-hint>
+      </mat-form-field>
+
+      <!-- Conseils -->
+      <div class="tips-section">
+        <h4 class="tips-title">
+          <mat-icon class="tips-icon">lightbulb</mat-icon>
+          Conseils
+        </h4>
+        <ul class="tips-list">
+          <li>Assurez-vous que l'adresse email est correcte</li>
+          <li>Un message personnel augmente les chances d'acceptation</li>
+          <li>La personne recevra une notification de votre demande</li>
+        </ul>
+      </div>
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions class="dialog-actions">
+    <button 
+      mat-button 
+      class="cancel-btn"
+      (click)="onCancel()"
+      [disabled]="isLoading">
+      Annuler
+    </button>
+    <button 
+      mat-raised-button 
+      color="primary" 
+      class="send-btn"
+      (click)="onSubmit()"
+      [disabled]="addFriendForm.invalid || isLoading">
+      <mat-icon *ngIf="isLoading" class="loading-icon">refresh</mat-icon>
+      <mat-icon *ngIf="!isLoading">send</mat-icon>
+      {{ isLoading ? 'Envoi...' : 'Envoyer l\'invitation' }}
+    </button>
+  </mat-dialog-actions>
+</div>

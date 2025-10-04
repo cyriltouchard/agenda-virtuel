@@ -1,0 +1,179 @@
+<header class="app-header">
+  <div class="header-container">
+    <!-- Logo et titre -->
+    <div class="header-brand" (click)="navigateToHome()">
+      <div class="logo">
+        <mat-icon class="logo-icon">event</mat-icon>
+      </div>
+      <span class="brand-text">Agenda Virtuel</span>
+    </div>
+
+    <!-- Navigation principale (desktop) -->
+    <nav class="header-nav" *ngIf="isAuthenticated">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">
+        <mat-icon>home</mat-icon>
+        <span>Accueil</span>
+      </a>
+      <a routerLink="/friends" routerLinkActive="active" class="nav-link">
+        <mat-icon>people</mat-icon>
+        <span>Amis</span>
+      </a>
+      <a routerLink="/groups" routerLinkActive="active" class="nav-link">
+        <mat-icon>groups</mat-icon>
+        <span>Groupes</span>
+      </a>
+    </nav>
+
+    <!-- Actions à droite -->
+    <div class="header-actions">
+      <!-- Bouton de thème -->
+      <button 
+        mat-icon-button 
+        class="theme-toggle"
+        (click)="toggleTheme()"
+        [attr.aria-label]="isDarkMode ? 'Activer le thème clair' : 'Activer le thème sombre'"
+        matTooltip="{{ isDarkMode ? 'Thème clair' : 'Thème sombre' }}">
+        <mat-icon>{{ isDarkMode ? 'light_mode' : 'dark_mode' }}</mat-icon>
+      </button>
+
+      <!-- Menu utilisateur (connecté) -->
+      <div class="user-menu" *ngIf="isAuthenticated">
+        <!-- Notifications -->
+        <button 
+          mat-icon-button 
+          class="notification-btn"
+          matTooltip="Notifications">
+          <mat-icon 
+            matBadge="3" 
+            matBadgeColor="warn" 
+            matBadgeSize="small"
+            aria-hidden="false"
+            [attr.aria-label]="'Notifications: 3 non lues'">notifications</mat-icon>
+        </button>
+
+        <!-- Avatar utilisateur -->
+        <button 
+          mat-button 
+          class="user-avatar-btn"
+          [matMenuTriggerFor]="userMenu">
+          <div class="user-avatar">
+            <span class="avatar-text">{{ getUserInitials() }}</span>
+          </div>
+          <span class="user-name" *ngIf="currentUser">
+            {{ currentUser.prenom }}
+          </span>
+          <mat-icon class="dropdown-icon">keyboard_arrow_down</mat-icon>
+        </button>
+
+        <!-- Menu déroulant utilisateur -->
+        <mat-menu #userMenu="matMenu" class="user-dropdown">
+          <div class="user-info">
+            <div class="user-avatar large">
+              <span class="avatar-text">{{ getUserInitials() }}</span>
+            </div>
+            <div class="user-details">
+              <p class="user-full-name">{{ currentUser?.prenom }} {{ currentUser?.nom }}</p>
+              <p class="user-email">{{ currentUser?.email }}</p>
+            </div>
+          </div>
+          
+          <mat-divider></mat-divider>
+          
+          <button mat-menu-item (click)="navigateToProfile()">
+            <mat-icon>person</mat-icon>
+            <span>Mon profil</span>
+          </button>
+          
+          <button mat-menu-item (click)="navigateToSettings()">
+            <mat-icon>settings</mat-icon>
+            <span>Paramètres</span>
+          </button>
+          
+          <mat-divider></mat-divider>
+          
+          <button mat-menu-item (click)="logout()" class="logout-btn">
+            <mat-icon>logout</mat-icon>
+            <span>Déconnexion</span>
+          </button>
+        </mat-menu>
+      </div>
+
+      <!-- Boutons de connexion (non connecté) -->
+      <div class="auth-buttons" *ngIf="!isAuthenticated">
+        <button mat-button class="btn-ghost" (click)="navigateToLogin()">
+          Connexion
+        </button>
+        <button mat-raised-button class="btn-primary" (click)="navigateToRegister()">
+          Inscription
+        </button>
+      </div>
+
+      <!-- Menu burger (mobile) -->
+      <button 
+        mat-icon-button 
+        class="mobile-menu-btn"
+        (click)="toggleMenu()"
+        [attr.aria-label]="isMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'">
+        <mat-icon>{{ isMenuOpen ? 'close' : 'menu' }}</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Menu mobile -->
+  <div class="mobile-menu" [class.open]="isMenuOpen" (click)="closeMenu()">
+    <div class="mobile-menu-content" (click)="$event.stopPropagation()">
+      <div class="mobile-menu-header" *ngIf="isAuthenticated">
+        <div class="user-avatar large">
+          <span class="avatar-text">{{ getUserInitials() }}</span>
+        </div>
+        <div class="user-details">
+          <p class="user-full-name">{{ currentUser?.prenom }} {{ currentUser?.nom }}</p>
+          <p class="user-email">{{ currentUser?.email }}</p>
+        </div>
+      </div>
+
+      <nav class="mobile-nav">
+        <ng-container *ngIf="isAuthenticated">
+          <a routerLink="/" (click)="closeMenu()" class="mobile-nav-link">
+            <mat-icon>home</mat-icon>
+            <span>Accueil</span>
+          </a>
+          <a routerLink="/friends" (click)="closeMenu()" class="mobile-nav-link">
+            <mat-icon>people</mat-icon>
+            <span>Amis</span>
+          </a>
+          <a routerLink="/groups" (click)="closeMenu()" class="mobile-nav-link">
+            <mat-icon>groups</mat-icon>
+            <span>Groupes</span>
+          </a>
+          <a routerLink="/profile" (click)="closeMenu()" class="mobile-nav-link">
+            <mat-icon>person</mat-icon>
+            <span>Profil</span>
+          </a>
+          <a routerLink="/settings" (click)="closeMenu()" class="mobile-nav-link">
+            <mat-icon>settings</mat-icon>
+            <span>Paramètres</span>
+          </a>
+          
+          <div class="mobile-menu-divider"></div>
+          
+          <button class="mobile-nav-link logout" (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            <span>Déconnexion</span>
+          </button>
+        </ng-container>
+
+        <ng-container *ngIf="!isAuthenticated">
+          <a routerLink="/login" (click)="closeMenu()" class="mobile-nav-link">
+            <mat-icon>login</mat-icon>
+            <span>Connexion</span>
+          </a>
+          <a routerLink="/register" (click)="closeMenu()" class="mobile-nav-link">
+            <mat-icon>person_add</mat-icon>
+            <span>Inscription</span>
+          </a>
+        </ng-container>
+      </nav>
+    </div>
+  </div>
+</header>

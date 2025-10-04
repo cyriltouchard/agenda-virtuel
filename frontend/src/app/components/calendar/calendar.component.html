@@ -1,0 +1,158 @@
+<div class="calendar-container">
+  <!-- En-tête du calendrier -->
+  <div class="calendar-header">
+    <div class="header-actions">
+      <button mat-raised-button color="primary" (click)="goToToday()">
+        <mat-icon>today</mat-icon>
+        Aujourd'hui
+      </button>
+      
+      <button mat-icon-button (click)="createEvent()" 
+              matTooltip="Créer un événement" class="create-btn">
+        <mat-icon>add</mat-icon>
+      </button>
+    </div>
+
+    <div class="month-navigation">
+      <button mat-icon-button (click)="previousMonth()" 
+              matTooltip="Mois précédent">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+      
+      <h2 class="month-title">{{ getMonthTitle() }}</h2>
+      
+      <button mat-icon-button (click)="nextMonth()" 
+              matTooltip="Mois suivant">
+        <mat-icon>chevron_right</mat-icon>
+      </button>
+    </div>
+
+    <div class="view-switcher">
+      <mat-button-toggle-group value="month" (change)="changeView($event.value)">
+        <mat-button-toggle value="day">Jour</mat-button-toggle>
+        <mat-button-toggle value="week">Semaine</mat-button-toggle>
+        <mat-button-toggle value="month">Mois</mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
+  </div>
+
+  <!-- Loading indicator -->
+  <div class="loading-container" *ngIf="isLoading">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Chargement des événements...</p>
+  </div>
+
+  <!-- Calendrier principal -->
+  <div class="calendar-grid" *ngIf="!isLoading">
+    <!-- En-têtes des jours de la semaine -->
+    <div class="week-header">
+      <div class="weekday-header" *ngFor="let day of weekDays">
+        {{ day }}
+      </div>
+    </div>
+
+    <!-- Grille des jours -->
+    <div class="calendar-body">
+      <div 
+        *ngFor="let day of calendarDays" 
+        class="calendar-day-cell"
+        [ngClass]="getDayClasses(day)"
+        (click)="selectDate(day)"
+        [attr.data-date]="day.date.toISOString()">
+        
+        <!-- Numéro du jour -->
+        <div class="day-number">
+          {{ getDayNumber(day) }}
+        </div>
+
+        <!-- Événements du jour -->
+        <div class="day-events">
+          <div 
+            *ngFor="let event of getVisibleEvents(day)" 
+            class="event-item"
+            [style.background-color]="getEventColor(event)"
+            [matTooltip]="event.titre + ' - ' + formatEventTime(event)"
+            (click)="openEventDetails(event, $event)">
+            
+            <span class="event-time" *ngIf="!event.touteLaJournee">
+              {{ formatEventTime(event) }}
+            </span>
+            <span class="event-title">
+              {{ getEventTitle(event) }}
+            </span>
+          </div>
+
+          <!-- Indicateur d'événements cachés -->
+          <div 
+            class="more-events" 
+            *ngIf="getHiddenEventsCount(day) > 0"
+            [matTooltip]="getHiddenEventsCount(day) + ' événement(s) supplémentaire(s)'">
+            +{{ getHiddenEventsCount(day) }}
+          </div>
+        </div>
+
+        <!-- Indicateur de sélection -->
+        <div class="selection-indicator" *ngIf="isDateSelected(day)"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panneau latéral d'informations -->
+  <div class="side-panel" *ngIf="selectedDate">
+    <mat-card class="selected-date-info">
+      <mat-card-header>
+        <mat-card-title>
+          {{ selectedDate | date:'EEEE d MMMM yyyy':'fr' }}
+        </mat-card-title>
+        <button mat-icon-button (click)="createEvent(selectedDate || undefined)" 
+                matTooltip="Ajouter un événement">
+          <mat-icon>add</mat-icon>
+        </button>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="selected-day-events">
+          <h4 *ngIf="getDayEvents().length === 0">Aucun événement</h4>
+          
+          <div *ngFor="let event of getDayEvents()" class="selected-event">
+            <div class="event-color-bar" 
+                 [style.background-color]="getEventColor(event)"></div>
+            <div class="event-details">
+              <h5>{{ event.titre }}</h5>
+              <p class="event-time">{{ formatEventTime(event) }}</p>
+              <p class="event-description" *ngIf="event.description">
+                {{ event.description }}
+              </p>
+              <div class="event-actions">
+                <button mat-button (click)="openEventDetails(event, $event)">
+                  Détails
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Légende des catégories -->
+  <div class="calendar-legend">
+    <h4>Catégories</h4>
+    <div class="legend-items">
+      <div class="legend-item" *ngFor="let category of getCategoryKeys()">
+        <div class="legend-color" 
+             [style.background-color]="categoryColors[category]"></div>
+        <span class="legend-label">{{ category | titlecase }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions flottantes -->
+  <button mat-fab 
+          class="fab-create"
+          color="accent"
+          (click)="createEvent(selectedDate || undefined)"
+          matTooltip="Créer un événement">
+    <mat-icon>add</mat-icon>
+  </button>
+</div>

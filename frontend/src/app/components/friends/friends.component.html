@@ -1,0 +1,250 @@
+<div class="friends-page">
+  <div class="container">
+    <!-- Header -->
+    <div class="page-header">
+      <div class="header-content">
+        <h1 class="page-title">
+          <mat-icon class="title-icon">people</mat-icon>
+          Mes Amis
+        </h1>
+        <p class="page-subtitle">Gérez vos amis et invitations</p>
+      </div>
+      <div class="header-actions">
+        <button 
+          mat-raised-button 
+          color="primary" 
+          class="add-friend-btn"
+          (click)="openAddFriendDialog()">
+          <mat-icon>person_add</mat-icon>
+          Ajouter un ami
+        </button>
+        <button 
+          mat-icon-button 
+          class="refresh-btn"
+          (click)="refreshData()"
+          matTooltip="Actualiser">
+          <mat-icon>refresh</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Barre de recherche -->
+    <div class="search-section">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Rechercher un ami</mat-label>
+        <input 
+          matInput 
+          [(ngModel)]="searchQuery"
+          (input)="searchFriends()"
+          placeholder="Nom, prénom ou email">
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+    </div>
+
+    <!-- Onglets -->
+    <mat-tab-group 
+      class="friends-tabs"
+      [(selectedIndex)]="selectedTab"
+      (selectedTabChange)="onTabChange($event.index)">
+      
+      <!-- Onglet Mes Amis -->
+      <mat-tab label="Mes Amis">
+        <ng-template matTabContent>
+          <div class="tab-content">
+            <div class="friends-grid" *ngIf="friends.length > 0">
+              <div class="friend-card" *ngFor="let friend of friends">
+                <div class="friend-avatar">
+                  <div class="avatar-circle" [class.online]="friend.friend?.isOnline">
+                    <span class="avatar-text">{{ getUserInitials(friend.friend) }}</span>
+                  </div>
+                  <div class="online-indicator" *ngIf="friend.friend?.isOnline"></div>
+                </div>
+                
+                <div class="friend-info">
+                  <h3 class="friend-name">{{ friend.friend?.prenom }} {{ friend.friend?.nom }}</h3>
+                  <p class="friend-email">{{ friend.friend?.email }}</p>
+                  <p class="friend-since">
+                    <mat-icon class="small-icon">schedule</mat-icon>
+                    Amis depuis le {{ formatDate(friend.requestedAt) }}
+                  </p>
+                </div>
+                
+                <div class="friend-actions">
+                  <button 
+                    mat-icon-button 
+                    class="action-btn message-btn"
+                    matTooltip="Envoyer un message">
+                    <mat-icon>message</mat-icon>
+                  </button>
+                  <button 
+                    mat-icon-button 
+                    class="action-btn view-btn"
+                    matTooltip="Voir le profil">
+                    <mat-icon>visibility</mat-icon>
+                  </button>
+                  <button 
+                    mat-icon-button 
+                    class="action-btn remove-btn"
+                    matTooltip="Supprimer cet ami"
+                    (click)="removeFriend(friend)">
+                    <mat-icon>person_remove</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- État vide -->
+            <div class="empty-state" *ngIf="friends.length === 0 && !isLoading">
+              <mat-icon class="empty-icon">people_outline</mat-icon>
+              <h3>Aucun ami trouvé</h3>
+              <p>Commencez par ajouter des amis pour enrichir votre réseau social !</p>
+              <button 
+                mat-raised-button 
+                color="primary" 
+                (click)="openAddFriendDialog()">
+                <mat-icon>person_add</mat-icon>
+                Ajouter votre premier ami
+              </button>
+            </div>
+
+            <!-- Bouton charger plus -->
+            <div class="load-more-section" *ngIf="hasMoreFriends && friends.length > 0">
+              <button 
+                mat-button 
+                class="load-more-btn"
+                (click)="loadMoreFriends()"
+                [disabled]="isLoading">
+                <mat-icon *ngIf="isLoading" class="loading-icon">refresh</mat-icon>
+                {{ isLoading ? 'Chargement...' : 'Charger plus' }}
+              </button>
+            </div>
+          </div>
+        </ng-template>
+      </mat-tab>
+
+      <!-- Onglet Demandes reçues -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          Reçues
+          <span class="tab-badge" *ngIf="getReceivedRequestsCount() > 0">
+            {{ getReceivedRequestsCount() }}
+          </span>
+        </ng-template>
+        <ng-template matTabContent>
+          <div class="tab-content">
+            <div class="requests-list" *ngIf="friendRequests.received.length > 0">
+              <div class="request-card received" *ngFor="let request of friendRequests.received">
+                <div class="request-avatar">
+                  <div class="avatar-circle">
+                    <span class="avatar-text">{{ getUserInitials(request.from) }}</span>
+                  </div>
+                </div>
+                
+                <div class="request-info">
+                  <h3 class="request-name">{{ request.from.prenom }} {{ request.from.nom }}</h3>
+                  <p class="request-email">{{ request.from.email }}</p>
+                  <p class="request-message" *ngIf="request.message">
+                    <mat-icon class="small-icon">format_quote</mat-icon>
+                    {{ request.message }}
+                  </p>
+                  <p class="request-date">
+                    <mat-icon class="small-icon">schedule</mat-icon>
+                    {{ formatDate(request.createdAt) }}
+                  </p>
+                </div>
+                
+                <div class="request-actions">
+                  <button 
+                    mat-raised-button 
+                    color="primary" 
+                    class="accept-btn"
+                    (click)="acceptFriendRequest(request._id)">
+                    <mat-icon>check</mat-icon>
+                    Accepter
+                  </button>
+                  <button 
+                    mat-button 
+                    class="decline-btn"
+                    (click)="declineFriendRequest(request._id)">
+                    <mat-icon>close</mat-icon>
+                    Refuser
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- État vide pour demandes reçues -->
+            <div class="empty-state" *ngIf="friendRequests.received.length === 0">
+              <mat-icon class="empty-icon">mark_email_read</mat-icon>
+              <h3>Aucune demande reçue</h3>
+              <p>Vous n'avez pas de nouvelles demandes d'amitié en attente.</p>
+            </div>
+          </div>
+        </ng-template>
+      </mat-tab>
+
+      <!-- Onglet Demandes envoyées -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          Envoyées
+          <span class="tab-badge" *ngIf="getSentRequestsCount() > 0">
+            {{ getSentRequestsCount() }}
+          </span>
+        </ng-template>
+        <ng-template matTabContent>
+          <div class="tab-content">
+            <div class="requests-list" *ngIf="friendRequests.sent.length > 0">
+              <div class="request-card sent" *ngFor="let request of friendRequests.sent">
+                <div class="request-avatar">
+                  <div class="avatar-circle">
+                    <span class="avatar-text">{{ getUserInitials(request.to) }}</span>
+                  </div>
+                </div>
+                
+                <div class="request-info">
+                  <h3 class="request-name">Demande envoyée</h3>
+                  <p class="request-email">{{ request.to }}</p>
+                  <p class="request-message" *ngIf="request.message">
+                    <mat-icon class="small-icon">format_quote</mat-icon>
+                    {{ request.message }}
+                  </p>
+                  <p class="request-date">
+                    <mat-icon class="small-icon">schedule</mat-icon>
+                    {{ formatDate(request.createdAt) }}
+                  </p>
+                </div>
+                
+                <div class="request-actions">
+                  <span class="status-badge pending">
+                    <mat-icon>hourglass_empty</mat-icon>
+                    En attente
+                  </span>
+                  <button 
+                    mat-button 
+                    class="cancel-btn"
+                    (click)="cancelFriendRequest(request._id)">
+                    <mat-icon>cancel</mat-icon>
+                    Annuler
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- État vide pour demandes envoyées -->
+            <div class="empty-state" *ngIf="friendRequests.sent.length === 0">
+              <mat-icon class="empty-icon">send</mat-icon>
+              <h3>Aucune demande envoyée</h3>
+              <p>Vous n'avez pas de demandes d'amitié en attente.</p>
+            </div>
+          </div>
+        </ng-template>
+      </mat-tab>
+    </mat-tab-group>
+
+    <!-- Indicateur de chargement -->
+    <div class="loading-overlay" *ngIf="isLoading">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Chargement...</p>
+    </div>
+  </div>
+</div>
