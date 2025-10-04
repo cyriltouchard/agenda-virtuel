@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard',
@@ -8,5 +9,17 @@ import { Component } from '@angular/core';
 export class DashboardComponent {
   title = 'Agenda Virtuel';
   
-  constructor() { }
+  constructor(private router: Router) { }
+
+  navigateToCalendar() {
+    this.router.navigate(['/calendar']);
+  }
+
+  navigateToFriends() {
+    this.router.navigate(['/friends']);
+  }
+
+  navigateToEvents() {
+    this.router.navigate(['/events']);
+  }
 }

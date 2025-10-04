@@ -3,17 +3,17 @@
   <p>Bienvenue dans votre agenda personnel moderne !</p>
   
   <div class="dashboard-cards">
-    <div class="card">
+    <div class="card" (click)="navigateToCalendar()">
       <h3>📅 Calendrier</h3>
       <p>Gérez vos événements</p>
     </div>
     
-    <div class="card">
+    <div class="card" (click)="navigateToFriends()">
       <h3>👥 Amis</h3>
       <p>Connectez-vous avec vos amis</p>
     </div>
     
-    <div class="card">
+    <div class="card" (click)="navigateToEvents()">
       <h3>📋 Événements</h3>
       <p>Organisez vos activités</p>
     </div>

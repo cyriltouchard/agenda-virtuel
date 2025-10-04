@@ -14,13 +14,17 @@
         <mat-icon>home</mat-icon>
         <span>Accueil</span>
       </a>
+      <a routerLink="/calendar" routerLinkActive="active" class="nav-link">
+        <mat-icon>calendar_today</mat-icon>
+        <span>Calendrier</span>
+      </a>
       <a routerLink="/friends" routerLinkActive="active" class="nav-link">
         <mat-icon>people</mat-icon>
         <span>Amis</span>
       </a>
-      <a routerLink="/groups" routerLinkActive="active" class="nav-link">
-        <mat-icon>groups</mat-icon>
-        <span>Groupes</span>
+      <a routerLink="/events" routerLinkActive="active" class="nav-link">
+        <mat-icon>event</mat-icon>
+        <span>Événements</span>
       </a>
     </nav>
 
@@ -138,13 +142,17 @@
             <mat-icon>home</mat-icon>
             <span>Accueil</span>
           </a>
+          <a routerLink="/calendar" (click)="closeMenu()" class="mobile-nav-link">
+            <mat-icon>calendar_today</mat-icon>
+            <span>Calendrier</span>
+          </a>
           <a routerLink="/friends" (click)="closeMenu()" class="mobile-nav-link">
             <mat-icon>people</mat-icon>
             <span>Amis</span>
           </a>
-          <a routerLink="/groups" (click)="closeMenu()" class="mobile-nav-link">
-            <mat-icon>groups</mat-icon>
-            <span>Groupes</span>
+          <a routerLink="/events" (click)="closeMenu()" class="mobile-nav-link">
+            <mat-icon>event</mat-icon>
+            <span>Événements</span>
           </a>
           <a routerLink="/profile" (click)="closeMenu()" class="mobile-nav-link">
             <mat-icon>person</mat-icon>
