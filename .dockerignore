@@ -1,0 +1,44 @@
+# Node modules
+node_modules
+npm-debug.log
+
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+README.md
+
+# IDE
+.vscode
+.idea
+
+# Tests
+coverage
+.nyc_output
+
+# Environnement
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+
+# Build temporaires
+dist
+build
+tmp
+temp
+
+# Scripts shell
+*.sh
+*.bat
+
+# Fichiers de configuration développement
+nodemon.json
