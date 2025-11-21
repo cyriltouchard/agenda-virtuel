@@ -24,7 +24,7 @@ FROM nginx:alpine
 COPY nginx.conf /etc/nginx/nginx.conf
 
 # Copier les fichiers buildés depuis le stage précédent
-COPY --from=build /app/dist/agenda-virtuel-frontend/browser /usr/share/nginx/html
+COPY --from=build /app/dist/agenda-virtuel-frontend /usr/share/nginx/html
 
 # Exposer le port 80
 EXPOSE 80
